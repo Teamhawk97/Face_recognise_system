@@ -4,6 +4,7 @@ import numpy as np
 from facerecog import get_face_embeddings
 
 STORAGE_DIR = "storage"
+THRESHOLD = 0.6
 
 def find_matching_face(uploaded_image_path):
     uploaded_embedding, uploaded_locations = get_face_embeddings(uploaded_image_path)
@@ -27,7 +28,7 @@ def find_matching_face(uploaded_image_path):
                     best_distance = distance
                     best_match_path = stored_path
 
-    if best_distance < 0.6 and best_match_path:
+    if best_distance < THRESHOLD and best_match_path:
         print(f"Match found with: {best_match_path} (Distance: {best_distance:.2f})")
 
         uploaded_image = cv2.imread(uploaded_image_path)
