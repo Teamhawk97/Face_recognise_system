@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 from facerecog import get_face_embeddings
 from find_faces import find_faces_in_image  # <-- Import your face extractor
+from plot_similarity import plot_face_similarity
+
 
 STORAGE_DIR = "storage"
 THRESHOLD = 0.6
@@ -18,6 +20,7 @@ def find_matching_face(uploaded_image_path):
     best_match_path = None
     best_distance = float('inf')
     best_match_location = None
+    best_stored_embedding = None
 
     for filename in os.listdir(STORAGE_DIR):
         if filename.endswith(".jpg"):
@@ -30,9 +33,13 @@ def find_matching_face(uploaded_image_path):
                     best_distance = distance
                     best_match_path = stored_path
                     best_match_location = stored_locations[0]  # Assuming one face per image
+                    best_stored_embedding = stored_embedding[0]
 
     if best_distance < THRESHOLD and best_match_path:
         print(f"Match found with: {best_match_path} (Distance: {best_distance:.2f})")
+
+        plot_face_similarity(uploaded_embedding[0], best_stored_embedding)
+
 
         # Get face (with padding) from uploaded image
         uploaded_faces = find_faces_in_image(uploaded_image_path)
