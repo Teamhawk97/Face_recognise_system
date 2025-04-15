@@ -50,7 +50,7 @@ def load_faces_from_db():
             face_data = np.frombuffer(face_entry["face_image"], dtype=np.uint8)
             face_img = cv2.imdecode(face_data, cv2.IMREAD_COLOR)
 
-            filename = os.path.join(STORAGE_DIR, f"{name}_{register_no}_face_{i+1}.jpg")
+            filename = os.path.join(STORAGE_DIR, f"{register_no}_{name}_face_{i+1}.jpg")
             cv2.imwrite(filename, face_img)
             count += 1
 

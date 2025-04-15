@@ -41,7 +41,6 @@ def find_matching_face(uploaded_image_path):
         #plot the graph
         plot_face_similarity(uploaded_embedding[0], best_stored_embedding)
 
-
         # Get face (with padding) from uploaded image
         uploaded_faces = find_faces_in_image(uploaded_image_path)
         if not uploaded_faces:
