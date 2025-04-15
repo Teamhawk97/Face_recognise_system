@@ -37,7 +37,8 @@ def find_matching_face(uploaded_image_path):
 
     if best_distance < THRESHOLD and best_match_path:
         print(f"Match found with: {best_match_path} (Distance: {best_distance:.2f})")
-
+        
+        #plot the graph
         plot_face_similarity(uploaded_embedding[0], best_stored_embedding)
 
 
