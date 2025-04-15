@@ -120,3 +120,4 @@ def find_matching_face(image_path, group_image_path):
 if __name__ == "__main__":
     store_embedding_in_db('group_photo2.jpg', 'Group Photo')
     find_matching_face('upload1.jpg', 'group_photo2.jpg')
+#checking if this works
