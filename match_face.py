@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 from facerecog import get_face_embeddings
-from find_faces import find_faces_in_image  # <-- Import your face extractor
+from find_faces import find_faces_in_image
 from plot_similarity import plot_face_similarity
 
 
