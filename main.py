@@ -6,5 +6,5 @@ from match_face import find_matching_face_db
 if __name__ == "__main__":
     #store_faces_from_group_photo('group_photo2.jpg')   # Step 1: Store memory
     load_faces_from_db()                               # Load stored faces
-    find_matching_face_db('upload1.jpg')                  # Step 2: Match against memory
+    find_matching_face_db('upload4.jpg')                  # Step 2: Match against memory
     clear_storage()                                    # Clear storage if needed

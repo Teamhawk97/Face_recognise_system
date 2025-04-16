@@ -100,7 +100,7 @@ def find_matching_face_db(uploaded_image_path):
         print(f"Match found in database (Distance: {best_distance:.2f})")
 
         # Show similarity plot
-        plot_face_similarity(uploaded_embedding[0], best_match_face["embedding"])
+        plot_face_similarity(uploaded_embedding[0], best_match_face["embedding"],output_path="plot_image")
 
         # Extract face from uploaded image
         uploaded_faces = find_faces_in_image(uploaded_image_path)
@@ -141,6 +141,13 @@ def find_matching_face_db(uploaded_image_path):
                 for key, value in biodata.items():
                     if key != "_id":
                         print(f"{key.capitalize()}: {value}")
+                generate_html_report(
+                    uploaded_face_img=uploaded_face_only,
+                    matched_face_img=matched_resized,
+                    person_data=biodata,
+                    similarity_plot_path="plot_image.png",
+                    output_path="face_match_report.html"
+                    )
             else:
                 print("No biodata found for matched person.")
         else:

@@ -29,6 +29,7 @@ def plot_face_similarity(embedding1, embedding2, output_path=None):
 
     if output_path:
         plt.savefig(output_path)
+        plt.close()
         print(f"Similarity plot saved to {output_path}")
     else:
         plt.show()
