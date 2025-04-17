@@ -1,0 +1,31 @@
+<!-- report_template.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Match Report</title>
+    <style>
+        body { font-family: Arial; padding: 30px; }
+        table { border-collapse: collapse; }
+        td, th { border: 1px solid #ddd; padding: 8px; }
+        img { border: 1px solid #ccc; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h2>✅ Face matched with a person from the database</h2>
+
+    <h3>👤 Bio Data:</h3>
+    <table id="bio-data">
+        <!-- {{BIO_DATA}} -->
+    </table>
+
+    <h3>📷 Uploaded Face vs Matched Face</h3>
+    <div style="display: flex;">
+        <img id="uploaded-face" src="data:image/jpeg;base64,{{UPLOADED_IMG}}" width="200"/>
+        <img id="matched-face" src="data:image/jpeg;base64,{{MATCHED_IMG}}" width="200"/>
+    </div>
+
+    <h3>📊 Similarity Plot</h3>
+    <img id="similarity-plot" src="data:image/png;base64,{{PLOT_IMG}}" width="400"/>
+</body>
+</html>
