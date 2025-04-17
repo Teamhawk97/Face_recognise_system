@@ -1,18 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 import os
 from werkzeug.utils import secure_filename
 from match_face import find_matching_face_db
 
+
 UPLOAD_FOLDER = 'static/uploads'
-RESULT_FOLDER = 'static/results'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['RESULT_FOLDER'] = RESULT_FOLDER
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(RESULT_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -33,11 +30,15 @@ def upload_file():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
-        # Call face matching function (returns match result and plot/report paths)
-        find_matching_face_db(file_path)
-        return "File uploaded and processed successfully. Check the results."
-    else:
-        return "File type not allowed"
+        # Match and get results
+        result = find_matching_face_db(file_path)
+        if result is None:
+           return "No match found."
+
+        # ✅ Pass it to result.html
+        return render_template('result.html', person_data=result)
+
+    return "File type not allowed"
 
 if __name__ == '__main__':
     app.run(debug=True)

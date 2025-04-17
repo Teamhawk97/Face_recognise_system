@@ -8,7 +8,7 @@ def img_to_base64(img):
     return base64.b64encode(buffer).decode('utf-8')
 
 def generate_html_report(uploaded_face_img, matched_face_img, person_data, similarity_plot_path,
-                         template_path="report_template.html", output_path="report.html"):
+                         template_path="result.html", output_path="result.html"):
     uploaded_b64 = img_to_base64(uploaded_face_img)
     matched_b64 = img_to_base64(matched_face_img)
 
@@ -34,3 +34,12 @@ def generate_html_report(uploaded_face_img, matched_face_img, person_data, simil
 
     print(f"✅ HTML report updated at: {output_path}")
     webbrowser.open(f"file://{os.path.abspath(output_path)}")
+
+
+def prepare_report(uploaded_img, matched_img, plot_path):
+    cv2.imwrite("static/results/uploaded.jpg", uploaded_img)
+    cv2.imwrite("static/results/matched.jpg", matched_img)
+    # You can also move or copy the plot image to the result folder
+    if os.path.exists(plot_path):
+        os.rename(plot_path, "static/results/plot.png")
+

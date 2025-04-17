@@ -8,7 +8,7 @@ from bson import ObjectId
 from facerecog import get_face_embeddings
 from find_faces import find_faces_in_image
 from plot_similarity import plot_face_similarity
-from generate_report import generate_html_report
+from generate_report import prepare_report
 
 # Constants
 STORAGE_DIR = "storage"
@@ -127,10 +127,10 @@ def find_matching_face_db(uploaded_image_path):
         matched_resized = cv2.resize(matched_image, (new_width, face_height))
 
         # Combine face-only and matched image
-        combined = np.hstack((uploaded_face_only, matched_resized))
-        cv2.imshow("Uploaded Face vs Database Match", combined)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #combined = np.hstack((uploaded_face_only, matched_resized))
+        #cv2.imshow("Uploaded Face vs Database Match", combined)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
 
         # 🔍 Get biodata using person_id
         person_id = best_match_face.get("person_id")
@@ -141,13 +141,10 @@ def find_matching_face_db(uploaded_image_path):
                 for key, value in biodata.items():
                     if key != "_id":
                         print(f"{key.capitalize()}: {value}")
-                generate_html_report(
-                    uploaded_face_img=uploaded_face_only,
-                    matched_face_img=matched_resized,
-                    person_data=biodata,
-                    similarity_plot_path="plot_image.png",
-                    output_path="face_match_report.html"
-                    )
+                
+                prepare_report(uploaded_face_only, matched_resized, "plot_image.png")
+
+                return biodata
             else:
                 print("No biodata found for matched person.")
         else:
