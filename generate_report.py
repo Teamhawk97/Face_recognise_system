@@ -35,10 +35,12 @@ def generate_html_report(uploaded_face_img, matched_face_img, person_data, simil
     print(f"✅ HTML report updated at: {output_path}")
     webbrowser.open(f"file://{os.path.abspath(output_path)}")
 
-
 def prepare_report(uploaded_img, matched_img, plot_path):
     cv2.imwrite("static/results/uploaded.jpg", uploaded_img)
     cv2.imwrite("static/results/matched.jpg", matched_img)
+    dest_plot = "static/results/plot.png"
+    if os.path.exists(dest_plot):
+        os.remove(dest_plot)
     # You can also move or copy the plot image to the result folder
     if os.path.exists(plot_path):
         os.rename(plot_path, "static/results/plot.png")
