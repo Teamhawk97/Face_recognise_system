@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 from pymongo import MongoClient
+from flask import jsonify
 from bson.objectid import ObjectId
 from facerecog import get_face_embeddings
 from find_faces import find_faces_in_image

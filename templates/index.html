@@ -76,6 +76,25 @@
             background-color: #3a0069;
         }
 
+        /* Secondary buttons (e.g., Upload New Person, View All) */
+        .secondary-button {
+            background-color: #ffffff;
+            color: #4b0082;
+            border: 2px solid #4b0082;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .secondary-button:hover {
+            background-color: #4b0082;
+            color: #ffffff;
+        }
+
         /* Spinner styles */
         .spinner {
             margin: 20px auto;
@@ -106,6 +125,15 @@
             <br>
             <input type="submit" value="Upload and Match">
         </form>
+
+        <!-- Buttons -->
+        <button type="button" class="secondary-button" onclick="window.location.href='/process_person_upload'">
+            Upload New Person
+        </button>
+
+        <button type="button" class="secondary-button" onclick="window.location.href='/view_all'">
+            View All Registered People
+        </button>
     </div>
 
     <script>
@@ -117,7 +145,6 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
 
-                // Show spinner while loading
                 spinner.style.display = 'block';
                 preview.style.display = 'none';
                 preview.style.opacity = 0;
@@ -125,7 +152,6 @@
                 reader.onload = function (e) {
                     preview.src = e.target.result;
 
-                    // When image is loaded, hide spinner and show image
                     preview.onload = () => {
                         spinner.style.display = 'none';
                         preview.style.display = 'block';

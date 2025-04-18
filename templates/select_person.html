@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Person</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+            color: #333;
+        }
+
+        .form-container {
+            background-color: #ffffffdd;
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        h2 {
+            color: #4b0082;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        select, input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        input[type="submit"] {
+            background-color: #4b0082;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #3a0069;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Step 1: Choose Person Type</h2>
+        <form id="personForm" method="POST" action="/step2">
+            <label for="upload_type">Select:</label>
+            <select name="upload_type" id="upload_type" required>
+                <option value="">-- Select Option --</option>
+                <option value="new">New Person</option>
+                <option value="existing">Existing Person</option>
+            </select>
+
+            <label for="register_no">Register Number:</label>
+            <input type="text" name="register_no" id="register_no" placeholder="Enter Register Number" required>
+
+            <p class="error hidden" id="regError"></p>
+
+            <input type="submit" value="Continue">
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('personForm');
+        const regInput = document.getElementById('register_no');
+        const typeSelect = document.getElementById('upload_type');
+        const regError = document.getElementById('regError');
+    
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+    
+            regError.classList.add('hidden');
+            const regNo = regInput.value.trim();
+            const type = typeSelect.value;
+    
+            if (!regNo || !type) {
+                regError.textContent = "Please fill in all fields.";
+                regError.classList.remove('hidden');
+                return;
+            }
+    
+            try {
+                const res = await fetch(`/check_register_no?reg=${regNo}`);
+                const data = await res.json();
+    
+                if (type === 'new' && data.exists) {
+                    regError.textContent = "This register number already exists. Please use a different one.";
+                    regError.classList.remove('hidden');
+                } else if (type === 'existing' && !data.exists) {
+                    regError.textContent = "Register number not found.";
+                    regError.classList.remove('hidden');
+                } else {
+                    // ✅ Valid input — redirect to the appropriate page with register number in query
+                    if (type === 'new') {
+                        window.location.href = `/new_person?reg=${encodeURIComponent(regNo)}`;
+                    } else {
+                        window.location.href = `/existing_person?reg=${encodeURIComponent(regNo)}`;
+                    }
+                }
+    
+            } catch (err) {
+                regError.textContent = "An error occurred while checking the register number.";
+                regError.classList.remove('hidden');
+                console.error(err);
+            }
+        });
+    </script>
+    
+    
+       
+</body>
+</html>

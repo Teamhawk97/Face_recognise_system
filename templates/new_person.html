@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Person Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #a18cd1, #fbc2eb);
+            color: #333;
+        }
+
+        .form-container {
+            background-color: #ffffffdd;
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        h2 {
+            color: #4b0082;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        select, input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        input[type="submit"] {
+            background-color: #4b0082;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #3a0069;
+        }
+    </style>
+    <script>
+        // On page load, extract register number from URL and populate the field
+        window.onload = function () {
+            const params = new URLSearchParams(window.location.search);
+            const reg = params.get('reg');
+            if (reg) {
+                document.getElementById('register_no').value = reg;
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="form-container">
+        <h2>New Person Registration</h2>
+        <form id="newPersonForm" method="POST" enctype="multipart/form-data" action="/submit_new_person">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required><br><br>
+            
+            <label for="register_no">Register Number:</label>
+            <input type="text" id="register_no" name="register_no" readonly><br><br> <!-- readonly field -->
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br><br>
+            
+            <label for="dob">Date of Birth:</label>
+            <input type="text" id="dob" name="dob" pattern="\d{4}-\d{2}-\d{2}" required title="Date must be in the format yyyy-mm-dd" placeholder="yyyy-mm-dd"><br><br>
+            
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required><br><br>
+
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*" required><br><br>
+            
+            <input type="submit" value="Submit">
+        </form>
+
+        <p id="regError" class="hidden">Register number already exists.</p>
+    </div>
+</body>
+</html>
