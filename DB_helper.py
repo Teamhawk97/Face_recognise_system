@@ -269,3 +269,5 @@ def get_people_with_faces():
 
     return people_with_faces
     
+def get_person_by_register_no(register_no):
+    return people_collection.find_one({'register_no': register_no})

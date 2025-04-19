@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 import os
 from werkzeug.utils import secure_filename
 from match_face import find_matching_face_db
-from DB_helper import check_in_DB, upload_new_person, upload_existing_face, get_people_with_faces
+from DB_helper import check_in_DB, upload_new_person, upload_existing_face, get_people_with_faces, get_person_by_register_no
 from bson import ObjectId
 from pymongo import MongoClient
 
@@ -70,7 +70,12 @@ def new_person_page():
 @app.route('/existing_person')
 def existing_person_page():
     reg = request.args.get('reg')
-    return render_template('existing_person.html', reg=reg)
+    person = get_person_by_register_no(reg)
+    if not person:
+        flash("Person not found.")
+        return redirect(url_for('index'))
+
+    return render_template('existing_person.html', person=person)
 
 
 @app.route('/submit_new_person', methods=['POST'])

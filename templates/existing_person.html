@@ -51,19 +51,7 @@
             font-size: 14px;
         }
 
-        input[type="submit"] {
-            background-color: #4b0082;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #3a0069;
-        }
-
-        button {
+        input[type="submit"], button {
             background-color: #4b0082;
             color: white;
             font-weight: bold;
@@ -73,34 +61,73 @@
             border-radius: 8px;
         }
 
-        button:hover {
+        input[type="submit"]:hover, button:hover {
             background-color: #3a0069;
         }
+
+        #imagePreview {
+            display: none;
+            margin-top: 20px;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
     </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Existing Person Face Upload</h2>
+        <div style="text-align: left; margin-bottom: 20px;">
+            <strong>Name:</strong> {{ person.name }}<br>
+            <strong>Register Number:</strong> {{ person.register_no }}<br>
+            <strong>Email:</strong> {{ person.email }}<br>
+            <strong>Date of Birth:</strong> {{ person.dob }}<br>
+            <strong>Age:</strong> {{ person.age }}
+        </div>
+        <form id="existingPersonForm" method="POST" enctype="multipart/form-data" action="/submit_existing_person">
+            <label for="register_no">Register Number:</label>
+            <input type="text" id="register_no" name="register_no" readonly><br><br>
+
+            <label for="image">Upload Image:</label>
+            <input type="file" id="image" name="image" accept="image/*" required><br>
+
+            <!-- Image Preview -->
+            <img id="imagePreview" src="" alt="Image Preview">
+
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="regError" class="hidden"></p>
+    </div>
+
     <script>
-        // On page load, populate register_no from query parameter
+        // Populate register_no from query string
         window.onload = function () {
             const params = new URLSearchParams(window.location.search);
             const reg = params.get('reg');
             if (reg) {
                 document.getElementById('register_no').value = reg;
             }
+
+            // Show preview on file selection
+            const imageInput = document.getElementById('image');
+            const preview = document.getElementById('imagePreview');
+
+            imageInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.src = '';
+                    preview.style.display = 'none';
+                }
+            });
         };
     </script>
-</head>
-<body>
-    <div class="form-container">
-        <h2>Existing Person Face Upload</h2>
-        <form id="existingPersonForm" method="POST" enctype="multipart/form-data" action="/submit_existing_person">
-            <label for="register_no">Register Number:</label>
-            <input type="text" id="register_no" name="register_no" readonly><br><br> <!-- readonly so user can't change -->
-
-            <label for="image">Upload Image:</label>
-            <input type="file" id="image" name="image" accept="image/*" required><br><br>
-
-            <button type="submit">Submit</button>
-        </form>
-        <p id="regError" class="hidden"></p>
-    </div>
 </body>
 </html>
