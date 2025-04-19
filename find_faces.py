@@ -69,10 +69,9 @@ def find_faces_in_image_web(image_path, padding_ratio=0.3):
         # Extract face region with color (from the original image)
         face_image = image[new_top:new_bottom, new_left:new_right]
         
-        # Check if the face_image is still in color (3 channels)
-        if face_image.shape[-1] != 3:
-            print("Warning: Face image has lost color.")
-        else:
-            face_images.append(face_image)
+        # Convert BGR to RGB for correct display
+        face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
+        
+        face_images.append(face_image)
 
     return face_images

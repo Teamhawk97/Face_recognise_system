@@ -109,7 +109,7 @@ def confirm_selected_face():
     #         os.remove(face_path)
 
     if result is None:
-        return render_template('result.html', person_data=None)
+        return "No match found."
 
     return render_template('result.html', person_data=result)
 
@@ -231,4 +231,4 @@ def view_all():
     return render_template('view_all.html', people=people_with_faces)
         
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False, threaded=False)
