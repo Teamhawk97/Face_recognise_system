@@ -21,7 +21,6 @@ def check_in_DB(reg):
 
 def upload_new_person(name, register_no, email, dob, age, image_path):
     # Save person biodata to MongoDB
-    # Save image/embedding if needed
     person_data = {
         "name": name,
         "register_no": register_no,
@@ -47,82 +46,46 @@ def upload_new_person(name, register_no, email, dob, age, image_path):
 
             faces = find_faces_in_image(image_path)
 
-            if len(faces) > 1:
-                print(f"Multiple faces detected in {filename}")
-                image_with_boxes = cv2.imread(image_path)
+            # Always assume one face
+            face_img = faces[0]
+            location = locations[0]
 
-                for i, (face_img, location) in enumerate(zip(faces, locations)):
-                    # Draw rectangle around each face and label it
-                    x = location.left()
-                    y = location.top()
-                    w = location.right() - x
-                    h = location.bottom() - y
+            # Extract coordinates from the dlib.rectangle object
+            x = location.left()
+            y = location.top()
+            w = location.right() - x
+            h = location.bottom() - y
 
-                    cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    cv2.putText(image_with_boxes, f"Face {i+1}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+            image_with_box = cv2.imread(image_path)
+            cv2.rectangle(image_with_box, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                # Show the image with face labels
-                preview = cv2.resize(image_with_boxes, (800, 800))
-                cv2.imshow(f"Faces in {filename}", preview)
-                cv2.waitKey(1)
+            # Encode and store face
+            success, encoded_image = cv2.imencode('.jpg', face_img)
+            if not success:
+                print(f"Failed to encode face image from {filename}")
+                continue
 
-                for i, face_img in enumerate(faces):
-                    confirm = input(f"Does Face {i+1} belong to {name}? (y/n): ")
-                    cv2.destroyAllWindows()
-
-                    if confirm.lower() == 'y':
-                        # Process and store face if confirmed
-                        success, encoded_image = cv2.imencode('.jpg', face_img)
-                        if not success:
-                            print(f"Failed to encode face image from {filename}")
-                            continue
-
-                        face_document = {
-                            "person_id": person_id,
-                            "embedding": embeddings[i].tolist(),
-                            "face_image": encoded_image.tobytes(),
-                            "source_image": filename
-                        }
-                        faces_collection.insert_one(face_document)
-                        print(f"Face {i+1} added to the database.")
-                    else:
-                        print(f"Skipping Face {i+1}.")
-            else:
-                # If only one face is detected, no confirmation is asked, just process it
-                face_img = faces[0]
-                location = locations[0]
-                
-                # Extract coordinates from the dlib.rectangle object
-                x = location.left()
-                y = location.top()
-                w = location.right() - x
-                h = location.bottom() - y
-                
-                image_with_box = cv2.imread(image_path)
-                cv2.rectangle(image_with_box, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-                # # Display the image with the highlighted face
-                # preview = cv2.resize(image_with_box, (800, 800))
-                # cv2.imshow(f"Face 1", preview)
-
-                # No need for user confirmation since there's only one face
-                success, encoded_image = cv2.imencode('.jpg', face_img)
-                if not success:
-                    print(f"Failed to encode face image from {filename}")
-                    continue
-
-                face_document = {
-                    "person_id": person_id,
-                    "embedding": embeddings[0].tolist(),
-                    "face_image": encoded_image.tobytes(),
-                    "source_image": filename
-                }
-                faces_collection.insert_one(face_document)
-                print(f"Face added to the database.")
-
-                # cv2.destroyAllWindows()
+            face_document = {
+                "person_id": person_id,
+                "embedding": embeddings[0].tolist(),
+                "face_image": encoded_image.tobytes(),
+                "source_image": filename
+            }
+            faces_collection.insert_one(face_document)
+            print(f"Face added to the database.")
 
     print("Uploading to DB:")
+
+    # Delete all image files from the upload folder
+    for filename in os.listdir(IMAGE_FOLDER):
+        file_path = os.path.join(IMAGE_FOLDER, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted: {file_path}")
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
+
     return True
 
 def upload_existing_face(reg, image_file):
@@ -146,83 +109,44 @@ def upload_existing_face(reg, image_file):
                 continue
 
             faces = find_faces_in_image(image_path)
+            face_img = faces[0]
+            location = locations[0]
+            
+            # Extract coordinates from the dlib.rectangle object
+            x = location.left()
+            y = location.top()
+            w = location.right() - x
+            h = location.bottom() - y
+            
+            image_with_box = cv2.imread(image_path)
+            cv2.rectangle(image_with_box, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-            if len(faces) > 1:
-                print(f"Multiple faces detected in {filename}")
-                image_with_boxes = cv2.imread(image_path)
+            success, encoded_image = cv2.imencode('.jpg', face_img)
+            if not success:
+                print(f"Failed to encode face image from {filename}")
+                continue
 
-                for i, (face_img, location) in enumerate(zip(faces, locations)):
-                    # Draw rectangle around each face and label it
-                    x = location.left()
-                    y = location.top()
-                    w = location.right() - x
-                    h = location.bottom() - y
-
-                    cv2.rectangle(image_with_boxes, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    cv2.putText(image_with_boxes, f"Face {i+1}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-
-                # Show the image with face labels
-                preview = cv2.resize(image_with_boxes, (800, 800))
-                cv2.imshow(f"Faces in {filename}", preview)
-                cv2.waitKey(1)
-
-                for i, face_img in enumerate(faces):
-                    confirm = input(f"Does Face {i+1} belong to {person['name']}? (y/n): ")
-                    cv2.destroyAllWindows()
-
-                    if confirm.lower() == 'y':
-                        # Process and store face if confirmed
-                        success, encoded_image = cv2.imencode('.jpg', face_img)
-                        if not success:
-                            print(f"Failed to encode face image from {filename}")
-                            continue
-
-                        face_document = {
-                            "person_id": person['_id'],
-                            "embedding": embeddings[i].tolist(),
-                            "face_image": encoded_image.tobytes(),
-                            "source_image": filename
-                        }
-                        faces_collection.insert_one(face_document)
-                        print(f"Face {i+1} added to the database.")
-                    else:
-                        print(f"Skipping Face {i+1}.")
-            else:
-                # If only one face is detected, no confirmation is asked, just process it
-                face_img = faces[0]
-                location = locations[0]
-                
-                # Extract coordinates from the dlib.rectangle object
-                x = location.left()
-                y = location.top()
-                w = location.right() - x
-                h = location.bottom() - y
-                
-                image_with_box = cv2.imread(image_path)
-                cv2.rectangle(image_with_box, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-                # # Display the image with the highlighted face
-                # preview = cv2.resize(image_with_box, (800, 800))
-                # cv2.imshow(f"Face 1", preview)
-
-                # No need for user confirmation since there's only one face
-                success, encoded_image = cv2.imencode('.jpg', face_img)
-                if not success:
-                    print(f"Failed to encode face image from {filename}")
-                    continue
-
-                face_document = {
-                    "person_id": person['_id'],
-                    "embedding": embeddings[0].tolist(),
-                    "face_image": encoded_image.tobytes(),
-                    "source_image": filename
-                }
-                faces_collection.insert_one(face_document)
-                print(f"Face added to the database.")
-
-                # cv2.destroyAllWindows()
+            face_document = {
+                "person_id": person['_id'],
+                "embedding": embeddings[0].tolist(),
+                "face_image": encoded_image.tobytes(),
+                "source_image": filename
+            }
+            faces_collection.insert_one(face_document)
+            print(f"Face added to the database.")
 
     print(f"Adding face for: {reg}")
+
+    # Delete all image files from the upload folder
+    for filename in os.listdir(IMAGE_FOLDER):
+        file_path = os.path.join(IMAGE_FOLDER, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted: {file_path}")
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
+
     return True
 
 def get_people_with_faces():

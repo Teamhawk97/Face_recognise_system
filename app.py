@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 import os
+import uuid
+import numpy as np
+from PIL import Image
 from werkzeug.utils import secure_filename
 from match_face import find_matching_face_db
+from find_faces import find_faces_in_image_web
 from DB_helper import check_in_DB, upload_new_person, upload_existing_face, get_people_with_faces, get_person_by_register_no
 from bson import ObjectId
 from pymongo import MongoClient
@@ -31,23 +35,83 @@ def index():
 def upload_file():
     if 'file' not in request.files:
         return "No file part"
+    
     file = request.files['file']
     if file.filename == '':
         return "No selected file"
+    
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
-        # Match and get results
-        result = find_matching_face_db(file_path)
-        if result is None:
-           return "No match found."
+        # ➤ Detect faces and crop them from the uploaded image
+        faces = find_faces_in_image_web(file_path)
 
-        # ✅ Pass it to result.html
-        return render_template('result.html', person_data=result)
+        if faces:
+            # Check if there is more than one face
+            if len(faces) > 1:
+                # Only process and store faces if there are multiple faces
+                temp_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'temp_faces')
+                os.makedirs(temp_dir, exist_ok=True)
+
+                face_filenames = []  # Just the filenames for use in templates
+
+                for i, face_img in enumerate(faces):
+                    if isinstance(face_img, np.ndarray):
+                        face_img = Image.fromarray(face_img)
+
+                    face_filename = f"face_{uuid.uuid4().hex}.jpg"
+                    face_path = os.path.join(temp_dir, face_filename)
+                    face_img.save(face_path)
+
+                    face_filenames.append(face_filename)  # Store only the filename
+
+                # Store face filenames in session
+                session['faces'] = face_filenames
+                session['image_path'] = file_path
+
+                return render_template('confirm_face.html', face_paths=face_filenames)
+
+            else:
+                # Match the single face with the database
+                result = find_matching_face_db(file_path)
+                if result is None:
+                    return "No match found."
+                
+                # Return the result immediately without storing anything
+                return render_template('result.html', person_data=result)
+
+        return "No faces detected."
 
     return "File type not allowed"
+
+@app.route('/confirm_selected_face', methods=['POST'])
+def confirm_selected_face():
+    data = request.get_json()
+    selected_index = data.get('index')
+
+    face_paths = session.get('faces', [])
+    if selected_index is None or not (0 <= selected_index < len(face_paths)):
+        return jsonify(success=False), 400
+
+    selected_face_filename = face_paths[selected_index]
+    selected_face_path = os.path.join(app.config['UPLOAD_FOLDER'], 'temp_faces', selected_face_filename)
+
+    # Match the face
+    result = find_matching_face_db(selected_face_path)
+
+    # # Delete the temporary face images after processing
+    # temp_faces_dir = os.path.join(app.config['UPLOAD_FOLDER'], 'temp_faces')
+    # for face_filename in face_paths:
+    #     face_path = os.path.join(temp_faces_dir, face_filename)
+    #     if os.path.exists(face_path):
+    #         os.remove(face_path)
+
+    if result is None:
+        return render_template('result.html', person_data=None)
+
+    return render_template('result.html', person_data=result)
 
 @app.route('/process_person_upload')
 def process_person_upload():
@@ -115,15 +179,15 @@ def submit_new_person():
         # Do something based on `success`
         if success:
             flash("New person uploaded successfully!")
-            return redirect(url_for('/'))
+            return redirect(url_for('index'))
             
         else:
             flash("Upload failed.")
-            return redirect(url_for('/'))
+            return redirect(url_for('index'))
             
     else:
         flash("No image file selected.")
-        return redirect(url_for('/'))
+        return redirect(url_for('index'))
         
 # Handle form submission for existing person image
 @app.route('/submit_existing_person', methods=['POST'])
@@ -152,20 +216,19 @@ def submit_existing_person():
         # Provide feedback based on success or failure
         if success:
             flash("Face image added for existing person.")
-            return redirect(url_for('/'))  # Or wherever you want to redirect
+            return redirect(url_for('index')) # Or wherever you want to redirect
         else:
             flash("Failed to upload face image.")
-            return redirect(url_for('/'))
+            return redirect(url_for('index'))
             
     else:
         flash("No image file selected.")
-        return redirect(url_for('/'))
+        return redirect(url_for('index'))
     
 @app.route('/view_all')
 def view_all():
     people_with_faces = get_people_with_faces()
     return render_template('view_all.html', people=people_with_faces)
         
-
 if __name__ == '__main__':
     app.run(debug=True)
