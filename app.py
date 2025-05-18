@@ -231,4 +231,4 @@ def view_all():
     return render_template('view_all.html', people=people_with_faces)
         
 if __name__ == '__main__':
-    app.run(debug=False, use_reloader=False, threaded=False)
+    app.run(debug=False, use_reloader=False, threaded=False)#run
